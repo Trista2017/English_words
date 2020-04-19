@@ -5,17 +5,17 @@
 
 主程序为English_words.py，程序主要分为三个功能区，分别是：
 
-  Search模块：用于检索词库中的单词
-  Upload模块：用于向词库加入新单词
-  Next模块：用于背单词，由Next和Answer两个按键共同实现
+  Search模块：用于检索词库中的单词；
+  Upload模块：用于向词库加入新单词；
+  Next模块：用于背单词，由Next和Answer两个按键共同实现。
 
 需要用的工具有：
-  python 3.6
-  postgreSQL（用于存储词库，也可以用excel，但是响应速度慢，个人不建议）
+  python 3.6；
+  postgreSQL（用于存储词库，也可以用excel，但是响应速度慢，个人不建议）；
 
 需要安装的python包
-  tkinter：构建python中的Gui窗体
-  sqlalchemy：用于sql的连接
-  playsound：播放单词发音
-  urllib.request：从有道的API接口获取单词发音
-  pyinstaller：将py文件打包成exe
+  tkinter：构建python中的Gui窗体；
+  sqlalchemy：用于sql的连接；
+  playsound：播放单词发音；
+  urllib.request：从有道的API接口获取单词发音；
+  pyinstaller：将py文件打包成exe。
