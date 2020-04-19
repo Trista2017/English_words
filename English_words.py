@@ -101,7 +101,7 @@ class Functions():
             urlword = word.replace(' ', '%20')
         else:
             urlword = word
-        urllib.request.urlretrieve(url + urlword,
+        urllib.request.urlretrieve(self.url + urlword,
                                    r'D:\python\py3\interest\English_words\sound\%s.mp3' % word)  # 从接口获取发音并存在本地文件夹
         self.sql.upload(data, 'word_list', if_exists='append')
         e1.delete(0, END)  # 上传后自动情况输入框文本
