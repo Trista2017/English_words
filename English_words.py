@@ -47,7 +47,6 @@ class Functions():
         '''
         global key, word
         word = key.get().lower()  # 从key控件中获取输入
-        text.configure(text=word)  # 在text控件中显示单词
         try:  # 若词库中有该词，则显示释义并播放声音，否则 提示未收录
             self.Show_Answer()
             self.Play_Sound()
@@ -59,6 +58,7 @@ class Functions():
         显示单词释义
         """
         global word, ans
+        text.configure(text=word)  # 在text控件中显示单词
         l = self.sql.load('word_list where 单词 = \'' + word + '\'')  # 从词库中检索单词
         sstr = lambda s: s or "" #将空输入转换为空格
         # 单词有可能因为词性不同，在词库中出现多次，因此每次根据单词在词库中按照where语句进行茶盅，并显示多层释义
@@ -101,8 +101,11 @@ class Functions():
             urlword = word.replace(' ', '%20')
         else:
             urlword = word
-        urllib.request.urlretrieve(self.url + urlword,
-                                   r'D:\python\py3\interest\English_words\sound\%s.mp3' % word)  # 从接口获取发音并存在本地文件夹
+        try:
+            urllib.request.urlretrieve(self.url + urlword,
+                                       r'D:\python\py3\interest\English_words\sound\%s.mp3' % word)  # 从接口获取发音并存在本地文件夹
+        except:
+            pass
         self.sql.upload(data, 'word_list', if_exists='append')
         e1.delete(0, END)  # 上传后自动情况输入框文本
         e2.delete(0, END)
