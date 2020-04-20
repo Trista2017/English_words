@@ -7,7 +7,7 @@
 '''
 
 # -*- coding: utf-8 -*-
-from tkinter import *
+from tkinter import Tk,Button,Label,Entry,END,LabelFrame
 from tkinter import messagebox
 from random import choice
 import pandas as pd
@@ -104,9 +104,9 @@ class Functions():
         try:
             urllib.request.urlretrieve(self.url + urlword,
                                        r'D:\python\py3\interest\English_words\sound\%s.mp3' % word)  # 从接口获取发音并存在本地文件夹
+            self.sql.upload(data, 'word_list', if_exists='append')
         except:
-            pass
-        self.sql.upload(data, 'word_list', if_exists='append')
+            messagebox.showinfo("提示：", "请检查拼写！")
         e1.delete(0, END)  # 上传后自动情况输入框文本
         e2.delete(0, END)
         e3.delete(0, END)
@@ -158,43 +158,60 @@ def main():
     func = Functions()
     proc = Running_process(func)
     # ======背单词模块===========================================
-    counter = Label(root, fg='red', anchor='se', font=('Arial', 13))
+    counter = Label(root, fg='#43A102', anchor='se', font=font.Font(family='Helvetica', size=13, weight="bold"))
     text = Label(root, text='开始背单词吧', font=('Arial', 15, 'bold'), width=20,
                  height=10, wraplength=280)
     ans = Label(root, text='', font=('Arial', 13), width=30, wraplength=280,
-                justify='left', height=10, anchor=W)
+                justify='left', height=10, anchor='w')
     Button(root, text="Next", bg='#43A102', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=15, command=func.Next_Random).grid(row=7, column=0)
+           width=15, command=func.Next_Random).grid(row=7, column=0,sticky='n')
     Button(root, text="Answer", bg='#A2B700', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=15, command=func.Show_Answer).grid(row=7, column=1)
-    counter.grid(row=1, column=0)
-    text.grid(row=3, column=0, rowspan=4)
-    ans.grid(row=3, column=1, rowspan=4, sticky=W, columnspan=2)
+           width=15, command=func.Show_Answer).grid(row=7, column=1,sticky='n')
+    counter.grid(row=0, column=0,pady=10)
+    text.grid(row=2, column=0, rowspan=4)
+    ans.grid(row=2, column=1, rowspan=4, sticky='w', columnspan=2)
     Button(root, text="Sound", bg='#EED205', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=15, command=func.Play_Sound).grid(row=7, column=2)
+           width=15, command=func.Play_Sound).grid(row=7, column=2,sticky='n')
     # =======搜索单词模块========================================
-    Label(root, text="搜索单词：", anchor=E).grid(row=0, column=0)
+    # Label(root, text="搜索单词：", anchor='e').grid(row=0, column=0,pady=10)
     key = Entry(root)
     Button(root, text="Search", bg='#FF8C05', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=15, command=func.Search_Word).grid(row=0, column=2)
-    key.grid(row=0, column=1)
+           width=10, command=func.Search_Word).grid(row=0, column=2,pady=10)
+    key.grid(row=0, column=1,pady=10)
     # =======上传单词模块========================================
-    Label(root, text="请输入单词：").grid(row=3, column=3)
-    Label(root, text="请输入词性：").grid(row=4, column=3)
-    Label(root, text="请输入词义：").grid(row=5, column=3)
-    Label(root, text="请输入补充信息：").grid(row=6, column=3)
+    up_module=LabelFrame(root,text='Upload New Words',height=200,width=250,foreground='#FF8C05',font=font.Font(family='Helvetica', size=10, weight="bold"),relief='ridge')
+    up_module.grid(column=3,row=2,rowspan=4,columnspan=4,padx=20, pady=10, ipadx=5, ipady=10,sticky='s')
+    # up_module.grid_propagate(False)
+    Label(up_module, text="请输入单词：").place(x=10, y=20, anchor="w")
+    Label(up_module, text="请输入词性：").place(x=10, y=60, anchor="w")
+    Label(up_module, text="请输入词义：").place(x=10, y=100, anchor="w")
+    Label(up_module, text="请输入补充信息：").place(x=10, y=140, anchor="w")
 
-    e1 = Entry(root)
-    e2 = Entry(root)
-    e3 = Entry(root)
-    e4 = Entry(root)
-    upload = Button(root, bg='#FDD283', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-                    text="Upload", width=15, command=func.Add_Words).grid(row=7, column=3, columnspan=2)
+    # Label(up_module, text="请输入单词：").grid(row=3, column=3)
+    # Label(up_module, text="请输入词性：").grid(row=4, column=3)
+    # Label(up_module, text="请输入词义：").grid(row=5, column=3)
+    # Label(up_module, text="请输入补充信息：").grid(row=6, column=3)
 
-    e1.grid(row=3, column=4)
-    e2.grid(row=4, column=4)
-    e3.grid(row=5, column=4)
-    e4.grid(row=6, column=4)
+    e1 = Entry(up_module)
+    e2 = Entry(up_module)
+    e3 = Entry(up_module)
+    e4 = Entry(up_module)
+
+    Button(up_module, bg='#FDD283', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
+           text="Upload", width=15, command=func.Add_Words).place(x=60, y=180, anchor="w")
+
+    e1.place(x=105, y=20, anchor="w")
+    e2.place(x=105, y=60, anchor="w")
+    e3.place(x=105, y=100, anchor="w")
+    e4.place(x=105, y=140, anchor="w")
+
+    # Button(root, bg='#FDD283', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
+    #                 text="Upload", width=15, command=func.Add_Words).grid(row=7, column=4, columnspan=2,sticky='n')
+    # #
+    # e1.grid(row=3, column=4)
+    # e2.grid(row=4, column=4)
+    # e3.grid(row=5, column=4)
+    # e4.grid(row=6, column=4)
 
     # ========键盘响应模块========================================
     btn = Button(root, text='button')
