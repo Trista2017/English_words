@@ -7,14 +7,19 @@
 '''
 
 # -*- coding: utf-8 -*-
-from tkinter import Tk,Button,Label,Entry,END,LabelFrame
+from tkinter import Tk, Button, Label, Entry, END, LabelFrame
 from tkinter import messagebox
+import tkinter.font as font
 from random import choice
 import pandas as pd
 import playsound
-import tkinter.font as font
-from Sql_connect import Connect
 import urllib.request
+import os
+from Sql_connect import Connect
+from Log_init import Log
+
+log = Log(os.path.basename('Push_Cards')) #记录打卡情况
+bins = Log(os.path.basename('Bin'))        #记录已掌握词汇
 
 
 class Functions():
@@ -60,13 +65,15 @@ class Functions():
         global word, ans
         text.configure(text=word)  # 在text控件中显示单词
         l = self.sql.load('word_list where 单词 = \'' + word + '\'')  # 从词库中检索单词
-        sstr = lambda s: s or "" #将空输入转换为空格
+        sstr = lambda s: s or ""  # 将空输入转换为空格
         # 单词有可能因为词性不同，在词库中出现多次，因此每次根据单词在词库中按照where语句进行茶盅，并显示多层释义
         if len(l) == 1:  # 若只有单层释义，直接拼接词性词义等信息
             c = l.iloc[0]
             s = c['词性'] + ' ' + c['词义']
             if c['补充信息'] is not None:
                 s = s + '\n' + '\n'.join(c['补充信息'].split(';'))
+        elif len(l) == 0:
+            raise Exception
         else:  # 否则，依次拼接词性词义等信息
             s = ''
             for k, c in l.iterrows():
@@ -115,6 +122,24 @@ class Functions():
         self.word_list = list(set(data['单词']))
         return
 
+    def Push_Cards(self):
+        global A4recite
+        s = '\n'
+        for widget in A4recite.winfo_children()[:-1]:
+            if widget.get() is not '':
+                s = s + widget.get() + '\n'
+        log.info(s)
+        messagebox.showinfo("恭喜", "打卡成功！")
+
+    def Done_Words(self):
+        global word, ans
+        self.sql.delete('word_list where 单词 = \'' + word + '\'')
+        os.remove('sound\%s.mp3' % word)
+        data = self.sql.load('word_list')
+        self.word_list = list(set(data['单词']))
+        ans.configure(text='恭喜，已掌握%s' % word)
+        bins.info(word)
+
 
 class Running_process():
     def __init__(self, func):
@@ -147,50 +172,52 @@ def main():
     e1, e2, e3, e4: 新单词输入控件
     :return: 窗体构建与功能实现
     '''
-    global e1, e2, e3, e4, ans, count, text, counter, key, root
-    # ======窗体基本设置=========================================
+    global e1, e2, e3, e4, ans, count, text, counter, key, root, A4recite
+
+    # <editor-fold desc="窗体整体设置">
     root = Tk()
-    root.iconbitmap('rainbow.ico')
+    # root.iconbitmap('rainbow.ico')
     root.title('彩虹单词本')
-    root.geometry("850x350")
+    root.geometry("850x600")
     root.resizable(0, 0)
-    # ======调用类==============================================
+    # </editor-fold>
+    # <editor-fold desc="调用类">
     func = Functions()
     proc = Running_process(func)
-    # ======背单词模块===========================================
+    # </editor-fold>
+    # <editor-fold desc="背单词模块">
     counter = Label(root, fg='#43A102', anchor='se', font=font.Font(family='Helvetica', size=13, weight="bold"))
     text = Label(root, text='开始背单词吧', font=('Arial', 15, 'bold'), width=20,
                  height=10, wraplength=280)
     ans = Label(root, text='', font=('Arial', 13), width=30, wraplength=280,
                 justify='left', height=10, anchor='w')
     Button(root, text="Next", bg='#43A102', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=15, command=func.Next_Random).grid(row=7, column=0,sticky='n')
+           width=15, command=func.Next_Random).grid(row=7, column=0, sticky='n')
     Button(root, text="Answer", bg='#A2B700', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=15, command=func.Show_Answer).grid(row=7, column=1,sticky='n')
-    counter.grid(row=0, column=0,pady=10)
+           width=15, command=func.Show_Answer).grid(row=7, column=1, sticky='n')
+    counter.grid(row=0, column=0, pady=10)
     text.grid(row=2, column=0, rowspan=4)
     ans.grid(row=2, column=1, rowspan=4, sticky='w', columnspan=2)
     Button(root, text="Sound", bg='#EED205', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=15, command=func.Play_Sound).grid(row=7, column=2,sticky='n')
-    # =======搜索单词模块========================================
-    # Label(root, text="搜索单词：", anchor='e').grid(row=0, column=0,pady=10)
+           width=15, command=func.Play_Sound).grid(row=7, column=2, sticky='n')
+    Button(root, text="Done it", bg='#cc0000', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
+           width=15, command=func.Done_Words).grid(row=7, column=3, sticky='n')
+    # </editor-fold>
+    # <editor-fold desc="搜索单词模块">
     key = Entry(root)
     Button(root, text="Search", bg='#FF8C05', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-           width=10, command=func.Search_Word).grid(row=0, column=2,pady=10)
-    key.grid(row=0, column=1,pady=10)
-    # =======上传单词模块========================================
-    up_module=LabelFrame(root,text='Upload New Words',height=200,width=250,foreground='#FF8C05',font=font.Font(family='Helvetica', size=10, weight="bold"),relief='ridge')
-    up_module.grid(column=3,row=2,rowspan=4,columnspan=4,padx=20, pady=10, ipadx=5, ipady=10,sticky='s')
+           width=10, command=func.Search_Word).grid(row=0, column=2, pady=10)
+    key.grid(row=0, column=1, pady=10)
+    # </editor-fold>
+    # <editor-fold desc="上传单词模块">
+    up_module = LabelFrame(root, text='Upload New Words', height=200, width=260, foreground='#FF8C05',
+                           font=font.Font(family='Helvetica', size=10, weight="bold"), relief='ridge')
+    up_module.grid(column=3, row=2, rowspan=4, columnspan=2, padx=20, pady=10, ipadx=5, ipady=10, sticky='s')
     # up_module.grid_propagate(False)
-    Label(up_module, text="请输入单词：").place(x=10, y=20, anchor="w")
-    Label(up_module, text="请输入词性：").place(x=10, y=60, anchor="w")
-    Label(up_module, text="请输入词义：").place(x=10, y=100, anchor="w")
-    Label(up_module, text="请输入补充信息：").place(x=10, y=140, anchor="w")
-
-    # Label(up_module, text="请输入单词：").grid(row=3, column=3)
-    # Label(up_module, text="请输入词性：").grid(row=4, column=3)
-    # Label(up_module, text="请输入词义：").grid(row=5, column=3)
-    # Label(up_module, text="请输入补充信息：").grid(row=6, column=3)
+    Label(up_module, text="单词：").place(x=75, y=20, anchor="e")
+    Label(up_module, text="词性：").place(x=75, y=60, anchor="e")
+    Label(up_module, text="词义：").place(x=75, y=100, anchor="e")
+    Label(up_module, text="补充信息：").place(x=75, y=140, anchor="e")
 
     e1 = Entry(up_module)
     e2 = Entry(up_module)
@@ -200,23 +227,64 @@ def main():
     Button(up_module, bg='#FDD283', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
            text="Upload", width=15, command=func.Add_Words).place(x=60, y=180, anchor="w")
 
-    e1.place(x=105, y=20, anchor="w")
-    e2.place(x=105, y=60, anchor="w")
-    e3.place(x=105, y=100, anchor="w")
-    e4.place(x=105, y=140, anchor="w")
+    e1.place(x=80, y=20, anchor="w")
+    e2.place(x=80, y=60, anchor="w")
+    e3.place(x=80, y=100, anchor="w")
+    e4.place(x=80, y=140, anchor="w")
+    # </editor-fold>
+    # <editor-fold desc="A4纸背单词模块">
+    A4recite = LabelFrame(root, text='20 Words One Day Challenge', height=200, width=750, foreground='#43A102',
+                          font=font.Font(family='Helvetica', size=10, weight="bold"), relief='ridge')
+    A4recite.grid(column=0, row=8, rowspan=4, columnspan=6, padx=50, pady=20, ipadx=5, ipady=10, sticky='s')
 
-    # Button(root, bg='#FDD283', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
-    #                 text="Upload", width=15, command=func.Add_Words).grid(row=7, column=4, columnspan=2,sticky='n')
-    # #
-    # e1.grid(row=3, column=4)
-    # e2.grid(row=4, column=4)
-    # e3.grid(row=5, column=4)
-    # e4.grid(row=6, column=4)
+    e2k = Entry(A4recite);
+    e22 = Entry(A4recite);
+    e23 = Entry(A4recite);
+    e24 = Entry(A4recite);
+    e25 = Entry(A4recite)
+    e10 = Entry(A4recite);
+    e20 = Entry(A4recite);
+    e30 = Entry(A4recite);
+    e40 = Entry(A4recite);
+    e50 = Entry(A4recite)
+    e11 = Entry(A4recite);
+    e21 = Entry(A4recite);
+    e31 = Entry(A4recite);
+    e41 = Entry(A4recite);
+    e51 = Entry(A4recite)
+    e101 = Entry(A4recite);
+    e201 = Entry(A4recite);
+    e301 = Entry(A4recite);
+    e401 = Entry(A4recite);
+    e501 = Entry(A4recite)
+    e2k.place(x=10, y=20, anchor="w");
+    e22.place(x=10, y=60, anchor="w");
+    e23.place(x=10, y=100, anchor="w");
+    e24.place(x=10, y=140, anchor="w");
+    e25.place(x=10, y=180, anchor="w")
+    e11.place(x=180, y=20, anchor="w");
+    e21.place(x=180, y=60, anchor="w");
+    e31.place(x=180, y=100, anchor="w");
+    e41.place(x=180, y=140, anchor="w");
+    e51.place(x=180, y=180, anchor="w")
+    e10.place(x=350, y=20, anchor="w");
+    e20.place(x=350, y=60, anchor="w");
+    e30.place(x=350, y=100, anchor="w");
+    e40.place(x=350, y=140, anchor="w");
+    e50.place(x=350, y=180, anchor="w")
+    e101.place(x=520, y=20, anchor="w");
+    e201.place(x=520, y=60, anchor="w");
+    e301.place(x=520, y=100, anchor="w");
+    e401.place(x=520, y=140, anchor="w");
+    e501.place(x=520, y=180, anchor="w")
 
-    # ========键盘响应模块========================================
+    Button(A4recite, bg='#A2B700', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
+           text="Push", width=8, command=func.Push_Cards).place(x=676, y=100, anchor="w")
+    # </editor-fold>
+    # <editor-fold desc="键盘响应模块">
     btn = Button(root, text='button')
     btn.bind_all('<KeyPress>', proc.eventhandler)
-    # =============================================================
+    # </editor-fold>
     root.mainloop()  # 进入消息循环
 
 
