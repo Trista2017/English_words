@@ -33,6 +33,15 @@ class Connect(object):
         query_sql = Template('select * from $arg1')
         df = pd.read_sql_query(query_sql.substitute(arg1=file),self.engine) # 配合pandas的方法读取数据库值
         return df
+    def delete(self,file):
+        string_data_io = io.StringIO()
+        string_data_io.seek(0)
+        with self.engine.connect() as connection:
+            with connection.connection.cursor() as cursor:
+                cursor.execute("delete from %s"%file)
+            connection.connection.commit()
+        print('删除数据成功')
+
 # 配合pandas的to_sql方法使用十分方便（dataframe对象直接入库）
     def upload(self,file,table_name, if_exists='fail'):
         if type(file)==str:
