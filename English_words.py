@@ -54,10 +54,9 @@ class Functions():
         word = key.get().lower()  # 从key控件中获取输入
         try:  # 若词库中有该词，则显示释义并播放声音，否则 提示未收录
             self.Show_Answer()
-            self.Play_Sound()
         except:
             ans.config(text='未收录')
-
+        self.Play_Sound()
     def Show_Answer(self):
         """
         显示单词释义
@@ -103,23 +102,23 @@ class Functions():
         if word is '':
             messagebox.showinfo("提示：", "请先输入内容！")
             return
+        if word[0] is ' ' or word[-1] is ' ':
+            messagebox.showinfo("提示：", "请检查输入！")
+            return
         data = pd.DataFrame({'单词': [word], '词性': [gender], '词义': [meaning], '补充信息': [info]})
         if ' ' in word:  # 根据HTML访问规则，将词组中的空格符号进行替换
             urlword = word.replace(' ', '%20')
         else:
             urlword = word
-        try:
-            urllib.request.urlretrieve(self.url + urlword,
-                                       r'D:\python\py3\interest\English_words\sound\%s.mp3' % word)  # 从接口获取发音并存在本地文件夹
-            self.sql.upload(data, 'word_list', if_exists='append')
-        except:
-            messagebox.showinfo("提示：", "请检查拼写！")
-        e1.delete(0, END)  # 上传后自动情况输入框文本
+        self.sql.upload(data, 'word_list', if_exists='append')
+        e1.delete(0, END)  # 上传后自动清空输入框文本
         e2.delete(0, END)
         e3.delete(0, END)
         e4.delete(0, END)
         data = self.sql.load('word_list')
         self.word_list = list(set(data['单词']))
+        urllib.request.urlretrieve(self.url + urlword,
+                                   r'D:\python\py3\interest\English_words\sound\%s.mp3' % word)  # 从接口获取发音并存在本地文件夹
         return
 
     def Push_Cards(self):
@@ -237,46 +236,46 @@ def main():
                           font=font.Font(family='Helvetica', size=10, weight="bold"), relief='ridge')
     A4recite.grid(column=0, row=8, rowspan=4, columnspan=6, padx=50, pady=20, ipadx=5, ipady=10, sticky='s')
 
-    e2k = Entry(A4recite);
-    e22 = Entry(A4recite);
-    e23 = Entry(A4recite);
-    e24 = Entry(A4recite);
+    e2k = Entry(A4recite)
+    e20 = Entry(A4recite)
+    e301 = Entry(A4recite)
+    e22 = Entry(A4recite)
+    e101 = Entry(A4recite)
+    e23 = Entry(A4recite)
+    e24 = Entry(A4recite)
+    e401 = Entry(A4recite)
+    e31 = Entry(A4recite)
+    e41 = Entry(A4recite)
+    e40 = Entry(A4recite)
+    e21 = Entry(A4recite)
     e25 = Entry(A4recite)
-    e10 = Entry(A4recite);
-    e20 = Entry(A4recite);
-    e30 = Entry(A4recite);
-    e40 = Entry(A4recite);
-    e50 = Entry(A4recite)
-    e11 = Entry(A4recite);
-    e21 = Entry(A4recite);
-    e31 = Entry(A4recite);
-    e41 = Entry(A4recite);
-    e51 = Entry(A4recite)
-    e101 = Entry(A4recite);
-    e201 = Entry(A4recite);
-    e301 = Entry(A4recite);
-    e401 = Entry(A4recite);
+    e10 = Entry(A4recite)
     e501 = Entry(A4recite)
-    e2k.place(x=10, y=20, anchor="w");
-    e22.place(x=10, y=60, anchor="w");
-    e23.place(x=10, y=100, anchor="w");
-    e24.place(x=10, y=140, anchor="w");
-    e25.place(x=10, y=180, anchor="w")
-    e11.place(x=180, y=20, anchor="w");
-    e21.place(x=180, y=60, anchor="w");
-    e31.place(x=180, y=100, anchor="w");
-    e41.place(x=180, y=140, anchor="w");
-    e51.place(x=180, y=180, anchor="w")
-    e10.place(x=350, y=20, anchor="w");
-    e20.place(x=350, y=60, anchor="w");
-    e30.place(x=350, y=100, anchor="w");
-    e40.place(x=350, y=140, anchor="w");
+    e50 = Entry(A4recite)
+    e30 = Entry(A4recite)
+    e201 = Entry(A4recite)
+    e11 = Entry(A4recite)
+    e51 = Entry(A4recite)
     e50.place(x=350, y=180, anchor="w")
-    e101.place(x=520, y=20, anchor="w");
-    e201.place(x=520, y=60, anchor="w");
-    e301.place(x=520, y=100, anchor="w");
-    e401.place(x=520, y=140, anchor="w");
+    e101.place(x=520, y=20, anchor="w")
+    e301.place(x=520, y=100, anchor="w")
+    e30.place(x=350, y=100, anchor="w")
+    e22.place(x=10, y=60, anchor="w")
+    e23.place(x=10, y=100, anchor="w")
+    e31.place(x=180, y=100, anchor="w")
+    e41.place(x=180, y=140, anchor="w")
     e501.place(x=520, y=180, anchor="w")
+    e10.place(x=350, y=20, anchor="w")
+    e51.place(x=180, y=180, anchor="w")
+    e25.place(x=10, y=180, anchor="w")
+    e201.place(x=520, y=60, anchor="w")
+    e40.place(x=350, y=140, anchor="w")
+    e2k.place(x=10, y=20, anchor="w")
+    e11.place(x=180, y=20, anchor="w")
+    e401.place(x=520, y=140, anchor="w")
+    e20.place(x=350, y=60, anchor="w")
+    e21.place(x=180, y=60, anchor="w")
+    e24.place(x=10, y=140, anchor="w")
 
     Button(A4recite, bg='#A2B700', fg='white', font=font.Font(family='Helvetica', size=10, weight="bold"),
            text="Push", width=8, command=func.Push_Cards).place(x=676, y=100, anchor="w")
